@@ -1,0 +1,41 @@
+{
+    "manifest_version": 2,
+    "name": "NoScroll",
+    "version": "1.0",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "content-script-example@mozilla.org",
+            "strict_min_version": "59.0a1"
+        }
+    },
+    "description": "Add simple blocklists to help you focus",
+    "icons": {
+        "48": "icons/noscroll-48.png"
+    },
+    "permissions": [
+        "<all_urls>",
+        "storage",
+        "tabs",
+        "webNavigation"
+    ],
+    "browser_action": {
+        "default_icon": {
+            "48": "icons/noscroll-48.png"
+        },
+        "default_title": "NoScroll",
+        "default_popup": "popup.html",
+        "browser_style": true
+    },
+    "background": {
+        "scripts": [
+            "scripts/background.js"
+        ]
+    },
+    "web_accessible_resources": [
+        "redirect.html",
+        "style.css",
+        "scripts/launch_help.js",
+        "lib/bootstrap.css",
+        "lib/bootstrap.min.js"
+    ]
+}

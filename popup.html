@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="lib/bootstrap.css"/>
+    <link rel="stylesheet" href="style.css"/>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="scripts/noscroll.js"></script>
+</head>
+
+<body class="px-3 my-3 w-100">
+    <span class="fs-4 text-center">
+        <img src="icons/noscroll-48.png" alt="NoScroll icon" style="max-height: 2rem; width: auto;">
+        NoScroll Block List
+    </span>
+    <hr>
+    
+    <div id="rule_list" class="container-fluid">
+    
+    </div>
+    <div class="container-fluid mt-3 d-flex fs-4">
+        <button type="button" class="btn btn-lg btn-outline-secondary me-auto" id="help">Help</button>
+        <div class="ms-auto me-4">
+            <button type="button" class="btn btn-secondary me-2" id="debug">Debug</button>
+            <button type="button" class="btn btn-lg btn-success" id="add_rule">+ Add Rule</button>
+            <!-- <button type="button" class="btn btn-lg btn-success" id="save">Save</button> -->
+        </div>
+
+        <div class="form-check form-switch align-self-center">
+            <input class="form-check-input" type="checkbox" id="toggle" checked>
+            <label class="form-check-label" for="toggle">Enable</label>
+        </div>
+    </div>
+
+</body>
+
+</html>

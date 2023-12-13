@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="lib/bootstrap.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="scripts/launch_help.js" defer></script>
+</head>
+
+<body>
+    <h1 class="fs-4 text-center mt-4">Blocked by 
+        <img src="icons/noscroll-48.png" alt="NoScroll icon" style="max-height: 1.8rem; width: auto;"> NoScroll</h1>
+    <span class="w-100 d-block text-center text-primary text-decoration-underline" data-bs-toggle="modal" data-bs-target="#help_modal">How to use NoScroll</span>
+
+    <section class="container-fluid col-12 col-sm-8 col-md-6 col-xl-4">
+
+        <blockquote class="blockquote mt-5 p-4">
+            <p>
+                The seed of every habit is a single, tiny decision.
+            </p>
+            <figcaption class="blockquote-footer">
+                James Clear
+            </figcaption>
+        </blockquote>
+
+        <blockquote class="blockquote mt-5 p-4">
+            <p>
+                Your results are the product of either personal focus or personal
+                distractions. The choice is yours.
+            </p>
+            <figcaption class="blockquote-footer">
+                John Di Lemme
+            </figcaption>
+        </blockquote>
+
+        <blockquote class="blockquote mt-5 p-4">
+            <p>
+                Discipline is the bridge between goals and accomplishments.
+            </p>
+            <figcaption class="blockquote-footer">
+                Jim Rohn
+            </figcaption>
+        </blockquote>
+
+        <blockquote class="blockquote mt-5 p-4">
+            <p>
+                Concentrate all your thoughts upon the work at hand.
+                The sun's rays do not burn until brought to a focus.
+            </p>
+            <figcaption class="blockquote-footer">
+                Alexander Graham Bell
+            </figcaption>
+        </blockquote>
+
+    </section>
+
+</body>
+
+<div class="modal fade" id="help_modal" tabindex="-1" aria-labelledby="help_modal_label" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title fs-5 text-center w-100" id="help_modal_label">
+
+                    <img src="icons/noscroll-48.png" alt="NoScroll icon" style="max-height: 1.8rem; width: auto;">
+                    NoScroll was created to help you stop endless scrolling.
+                </span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body mb-3 mx-1">
+                <span class="mb-3 fs-5 w-100 d-block text-center">How to Use</span>
+                <p class="text-center">
+                    The following ruleset will block the <strong>homepage</strong> of Facebook, so you don't spend your time 
+                    infinitely scrolling. Still want to keep in touch with friends? Set it to redirect to your messages!
+                </p>
+                <div class="rule d-flex py-2 px-5 rounded">
+                    <div class="d-block me-3 w-100">
+                        <label for="sample_block">Block</label>
+                        <input class="form-control" id="sample_block" type="text" value="facebook.com" readonly>
+                    </div>
+                    <div class="d-block w-100">
+                        <label for="sample_redirect">Redirect</label>
+                        <input class="form-control" id="sample_redirect" type="text" value="facebook.com/messages" readonly>
+                    </div>
+                </div>
+
+                <p class="mt-4 mb-2 text-center">
+                    Want to block a <strong>whole</strong> website? <br> Add the wildcard <strong>*</strong> at the end of your block rule so nothing gets through!
+                </p>
+                <div class="rule d-flex py-2 px-5 rounded">
+                    <div class="d-block me-3 w-100">
+                        <label for="sample_block">Block</label>
+                        <input class="form-control" id="sample_block" type="text" value="facebook.com*" readonly>
+                    </div>
+                    <div class="d-block w-100">
+                        <label for="sample_redirect">Redirect</label>
+                        <input class="form-control" id="sample_redirect" type="text" value="youtube.com/watch?v=dQw4w9WgXcQ" readonly>
+                    </div>
+                </div>
+
+                <!-- <span class="mt-4 mb-3 fs-5 w-100 d-block text-center">Why</span> -->
+                <hr class="mt-4">
+                <p class="text-center">
+                    Block rules are intentionally flexible so you're in control. Quickly enable/disable your rules so <em>you</em> can
+                    decide when it's time to focus. We could make it harder to disable, but then you're not the one in control of your habits.
+                    <br> 
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+</html>
