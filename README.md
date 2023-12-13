@@ -13,7 +13,7 @@ Block rules are intentionally simple and flexible so you're in control. Quickly 
 
 ## Installation
 
-Install the extension from [Mozilla Add-ons](#)
+Install the extension from [Mozilla Add-ons](#) (coming soon)
 
 ##### Manual Installation / Development
 
@@ -45,7 +45,8 @@ Under "This Firefox", find "Load Temporary Add-on" and load the `manifest.json` 
 
 ## Contributing
 
-Contributions are welcome! If you find a bug or have a feature request, please [open an issue](#).
+Contributions are welcome! If you find a bug or have a feature request, please [open an issue](https://github.com/Seltonu/NoScroll/issues). 
+*Note that NoScroll is designed to be intentionally simple, if you need complex rulesets please check out an extension like LeechBlock NG.
 
 ## License
 
