@@ -3,6 +3,8 @@
 Stop endless scrolling and take control of your online habits with the NoScroll extension.
 Block rules are intentionally simple and flexible so you're in control. Quickly enable/disable your rules so <em>you</em> can decide when it's time to focus.
 
+![Alt text](noscroll.png)
+
 ## Features
 
 - **Simple Unlimited Ruleset:** Create rules to block or redirect specific websites or pages
