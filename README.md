@@ -38,15 +38,16 @@ Under "This Firefox", find "Load Temporary Add-on" and load the `manifest.json` 
         Redirect: youtube.com/watch?v=dQw4w9WgXcQ
         ```
 
-3. Your rules to local storage automatically.
+3. Your rules are saved automatically when you exit.
 
 4. Need to concentrate? Toggle "enabled". Break time? Toggle it off!
 
 
 ## Contributing
 
-Contributions are welcome! If you find a bug or have a feature request, please [open an issue](https://github.com/Seltonu/NoScroll/issues). 
-*Note that NoScroll is designed to be intentionally simple, if you need complex rulesets please check out an extension like LeechBlock NG.
+Contributions are welcome! If you find a bug or have a feature request, please [open an issue](https://github.com/Seltonu/NoScroll/issues).
+
+*Note that NoScroll is designed to be intentionally simple, if you need complex rulesets please check out an extension like LeechBlock NG.*
 
 ## License
 
