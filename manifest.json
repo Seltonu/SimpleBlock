@@ -1,22 +1,21 @@
 {
     "manifest_version": 2,
-    "name": "NoScroll",
+    "name": "SimpleBlock",
     "version": "1.0",
     "description": "Add simple blocklists to help you focus",
     "icons": {
-        "48": "icons/noscroll-48.png"
+        "48": "icons/simpleblock-48.png"
     },
     "permissions": [
-        "<all_urls>",
         "storage",
         "tabs",
         "webNavigation"
     ],
     "browser_action": {
         "default_icon": {
-            "48": "icons/noscroll-48.png"
+            "48": "icons/simpleblock-48.png"
         },
-        "default_title": "NoScroll",
+        "default_title": "SimpleBlock",
         "default_popup": "popup.html",
         "browser_style": true
     },
