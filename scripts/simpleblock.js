@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </div>
                         <div class="d-block w-100">
                             <label for="redirect_${index}">Redirect To</label>
-                            <input id="redirect_${index}" type="text" class="form-control" placeholder="NoScroll" value="${rule.redirect}">
+                            <input id="redirect_${index}" type="text" class="form-control" placeholder="SimpleBlock" value="${rule.redirect}">
                         </div>
                     
                         <button type="button" id="remove_${index}" class="btn btn-close ms-4 align-self-center mt-3" aria-label="Remove rule"></button>

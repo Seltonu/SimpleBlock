@@ -1,9 +1,9 @@
-# NoScroll Extension
+# SimpleBlock Extension
 
-Stop endless scrolling and take control of your online habits with the NoScroll extension.
+Stop endless scrolling and take control of your online habits with the SimpleBlock extension.
 Block rules are intentionally simple and flexible so you're in control. Quickly enable/disable your rules so <em>you</em> can decide when it's time to focus.
 
-![Alt text](noscroll.png)
+![Alt text](simpleblock.png)
 
 ## Features
 
@@ -13,7 +13,7 @@ Block rules are intentionally simple and flexible so you're in control. Quickly 
 
 ## Installation
 
-Install the extension from [Mozilla Add-ons](#) (coming soon)
+Install the extension from [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/simpleblock/)
 
 ##### Manual Installation / Development
 
@@ -22,7 +22,7 @@ Under "This Firefox", find "Load Temporary Add-on" and load the `manifest.json` 
 
 ## Usage
 
-1. Click on the NoScroll icon (reccomended to pin to toolbar for easy access).
+1. Click on the SimpleBlock icon (reccomended to pin to toolbar for easy access).
 
 2. Add or modify rules in the popup window. Ex:
 
@@ -45,9 +45,9 @@ Under "This Firefox", find "Load Temporary Add-on" and load the `manifest.json` 
 
 ## Contributing
 
-Contributions are welcome! If you find a bug or have a feature request, please [open an issue](https://github.com/Seltonu/NoScroll/issues).
+Contributions are welcome! If you find a bug or have a feature request, please [open an issue](https://github.com/Seltonu/SimpleBlock/issues).
 
-*Note that NoScroll is designed to be intentionally simple, if you need complex rulesets please check out an extension like LeechBlock NG.*
+*Note that SimpleBlock is designed to be intentionally simple, if you need complex rulesets please check out an extension like LeechBlock NG.*
 
 ## License
 
