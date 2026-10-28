@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--
+  Example rules for the help page, built from the popup's own stylesheet and
+  rule-row markup so they look exactly like the real thing. A note under each
+  field, where the popup shows its live hint, explains that half of the rule.
+  Like every page shown in a tab, it uses no extension APIs.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <title>Example rules</title>
+  <link rel="stylesheet" href="../popup/popup.css">
+  <script src="../shared/theme.js"></script>
+  <style>
+    /* Fill the help page's column instead of the popup's fixed size. */
+    :root { --zoom: 1; }
+    body { width: auto; max-height: none; }
+    .panel { margin: 1px; }
+    .rules { overflow: visible; }
+    /* No checkbox or remove button here: just Block -> Redirect, a note under each. */
+    .rule-columns, .rule { grid-template-columns: minmax(0, 1fr) 14px minmax(0, 1fr); }
+    .col-block, .rule-hint--block { grid-column: 1; }
+    .col-redirect, .rule-hint--redirect { grid-column: 3; }
+    .rule + .rule { margin-top: 6px; }
+    .rule-hint { grid-row: 2; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <section class="panel">
+    <div class="rule-columns" aria-hidden="true"><span class="col-block">Block</span><span class="col-redirect">Redirect to</span></div>
+    <ul class="rules">
+      <li class="rule">
+        <input class="field field--block" type="text" value="facebook.com" aria-label="Block" readonly tabindex="-1">
+        <span class="rule-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input class="field field--redirect" type="text" value="facebook.com/messages" aria-label="Redirect to" readonly tabindex="-1">
+        <p class="rule-hint rule-hint--block">Only the <u>homepage</u> feed. (Marketplace links etc. still work.)</p>
+        <p class="rule-hint rule-hint--redirect">Sends you to messages instead.</p>
+      </li>
+      <li class="rule">
+        <input class="field field--block" type="text" value="facebook.com*" aria-label="Block" readonly tabindex="-1">
+        <span class="rule-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input class="field field--redirect" type="text" value="" placeholder="SimpleBlock" aria-label="Redirect to" readonly tabindex="-1">
+        <p class="rule-hint rule-hint--block">Add a wildcard * to block the <u>whole</u> site.</p>
+        <p class="rule-hint rule-hint--redirect">Leave empty to see the SimpleBlock page.</p>
+      </li>
+      <li class="rule">
+        <input class="field field--block" type="text" value="reddit.com" aria-label="Block" readonly tabindex="-1">
+        <span class="rule-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input class="field field--redirect" type="text" placeholder="SimpleBlock" aria-label="Redirect to" readonly tabindex="-1">
+        <p class="rule-hint rule-hint--block">Block the homepage of reddit (while still allowing subreddits)</p>
+        <p class="rule-hint rule-hint--redirect">Leave empty to see the SimpleBlock page.</p>
+      </li>
+      <li class="rule">
+        <input class="field field--block" type="text" value="youtube.com/shorts*" aria-label="Block" readonly tabindex="-1">
+        <span class="rule-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input class="field field--redirect" type="text" value="youtube.com/watch?v=dQw4w9WgXcQ" aria-label="Redirect to" readonly tabindex="-1">
+        <p class="rule-hint rule-hint--block">Stop losing time watching shorts</p>
+        <p class="rule-hint rule-hint--redirect">Watch something better</p>
+      </li>
+      <li class="rule">
+        <input class="field field--block" type="text" value="news.google.com" aria-label="Block" readonly tabindex="-1">
+        <span class="rule-arrow" aria-hidden="true"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <input class="field field--redirect" type="text" value="https://www.nyan.cat/" aria-label="Redirect to" readonly tabindex="-1">
+        <p class="rule-hint rule-hint--block">Doomscrolling the news too much?</p>
+        <p class="rule-hint rule-hint--redirect">:3</p>
+      </li>
+    </ul>
+  </section>
+</body>
+</html>

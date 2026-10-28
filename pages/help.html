@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>How to use SimpleBlock</title>
+  <link rel="icon" href="../icons/simpleblock-48.png">
+  <link rel="stylesheet" href="page.css">
+  <script src="../shared/theme.js"></script>
+  <script src="help.js" defer></script>
+</head>
+<body>
+  <main class="help">
+    <header class="help-header">
+      <img src="../icons/simpleblock-48.png" alt="" width="40" height="40">
+      <h1>How to use SimpleBlock</h1>
+    </header>
+    <p>SimpleBlock was created to help you stop endless scrolling.</p>
+    <!--<p>
+        Block rules are intentionally flexible so you're in control.
+        Quickly enable/disable rules so you decide when it's time to focus.
+        <u>We could make it harder to disable, but then you're not the one in control of your habits.</u>
+    </p>-->
+    <div class="note">
+      Rules are intentionally flexible so <em>you</em> stay in control and decide when it's time to focus.
+      We could make it harder to switch off, but then you wouldn't be the one in charge of your habits.
+    </div>
+
+    <div class="popup-figure">
+      <iframe class="fit-frame popup-preview" src="popup-preview.html" title="The SimpleBlock popup" tabindex="-1"></iframe>
+      <div>
+        <h2>Three levels</h2>
+        <ol class="switch-list">
+          <li><strong>Global</strong> Turn EVERYTHING on or off</li>
+          <li><strong>Category</strong> Toggle categories you create</li>
+          <li><strong>Rule</strong> Individual block rules</li>
+        </ol>
+      </div>
+    </div>
+
+    <h2>Tips for adding rules</h2>
+    <p><strong>Block</strong> any page, <strong>Redirect to</strong> any link.</p>
+    <iframe class="fit-frame rule-examples" src="rule-examples.html" title="Example rules"></iframe>
+    <ul class="rules-of-thumb">
+      <li><code>https://</code>, <code>www.</code> and capital letters don't matter</li>
+      <li>Subdomains: <code>news.google.com</code> doesn't block <code>mail.google.com</code>, but <code>google.com</code> blocks both</li>
+    </ul>
+  </main>
+</body>
+</html>

@@ -1,0 +1,302 @@
+/*
+ * SimpleBlock popup ("Paper" design).
+ * All colours are the custom properties below, each with a light and a dark
+ * value; the popup follows Firefox's theme.
+ */
+
+/* ---------- Colours ---------- */
+
+:root {
+  color-scheme: light dark;
+  --bg: light-dark(#f5f5f3, #141518);
+  --surface: light-dark(#ffffff, #1d1e22);
+  --field: light-dark(#fafaf9, #17181b);
+  --track: light-dark(#e9e9e5, #222327);
+  --hover: light-dark(#f0f0ed, #2a2b30);
+  --border: light-dark(#e3e3df, #2c2d33);
+  --border-strong: light-dark(#cfcfca, #3d3e45);
+  /* Edges of interactive controls: at least 3:1 against their background (WCAG AA). */
+  --field-border: light-dark(#8e8e8b, #6a6c78);
+  --text: light-dark(#1c1c1e, #ececef);
+  /* At least 4.5:1 on every background it's used on, including the tab strip. */
+  --muted: light-dark(#616166, #9a9ba3);
+  --accent: light-dark(#0369a1, #7dd3fc);
+  --accent-ink: light-dark(#ffffff, #0b1a24);
+  --ok: light-dark(#1a8a4b, #4cc38a);
+  --danger: light-dark(#d1342f, #ff7a70);
+  --switch-off: var(--field-border);
+  --focus: var(--accent);
+  --rule-cols: 26px minmax(0, 1fr) 14px minmax(0, 1fr) 26px;
+}
+/* Set by the sun/moon button (via shared/theme.js); otherwise Firefox's theme applies. */
+:root[data-scheme="light"] { color-scheme: light; }
+:root[data-scheme="dark"] { color-scheme: dark; }
+
+/* ---------- Base ---------- */
+
+/* Firefox draws popups small, so scale the whole design up a step. Firefox
+   caps popups at 600px tall, hence the max-height scaled down to match. */
+:root { --zoom: 1.15; zoom: var(--zoom); }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  display: flex;
+  flex-direction: column;
+  /* Wide enough for a typical redirect like "facebook.com/messages" to show in full. */
+  width: 512px;
+  max-height: calc(600px / var(--zoom));
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+button, input { margin: 0; color: inherit; font: inherit; }
+button { padding: 0; border: 0; background: none; cursor: pointer; }
+h1, p { margin: 0; }
+ul { margin: 0; padding: 0; list-style: none; }
+svg { display: block; flex: none; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* A short cross-fade when the theme button is used (shared/theme.js adds the class). */
+:root.theme-changing,
+:root.theme-changing *,
+:root.theme-changing *::before,
+:root.theme-changing *::after {
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, fill .3s ease, stroke .3s ease;
+}
+
+/* ---------- Header ---------- */
+
+.topbar { display: flex; align-items: center; gap: 10px; padding: 14px 16px 12px; }
+.brand-icon { width: 24px; height: 24px; }
+.brand { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+
+/* Sits right after the name; the switch is pushed to the far right. */
+.theme-toggle { width: 28px; height: 28px; margin-right: auto; }
+
+/* Empty (and so invisible) unless blocking is paused. */
+.paused-note {
+  margin: 0 16px 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: light-dark(#fff4e0, #3a2a12);
+  color: light-dark(#8a4b00, #ffcc80);
+  font-size: 12px;
+}
+.paused-note:empty { margin: 0; padding: 0; }
+body.is-paused .workspace { filter: grayscale(1); }
+
+/* ---------- Ruleset tabs ---------- */
+
+.workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+.tabbar {
+  display: flex;
+  align-items: center;
+  margin: 0 16px;
+  padding: 1px;
+  border-radius: 10px;
+  background: var(--track);
+}
+/* Scrolls sideways when there are more rulesets than fit; "+" stays put. */
+.tabs {
+  display: flex;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  padding: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Keeps a tab scrolled into view clear of the edge fades below. */
+  scroll-padding-inline: 28px;
+}
+.tabs[data-fade="start"] { mask-image: linear-gradient(to right, transparent, #000 28px); }
+.tabs[data-fade="end"] { mask-image: linear-gradient(to left, transparent, #000 28px); }
+.tabs[data-fade="start end"] {
+  mask-image: linear-gradient(to right, transparent, #000 28px, #000 calc(100% - 28px), transparent);
+}
+
+.tab {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  color: var(--muted);
+  font-weight: 550;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--text); }
+.tab:focus-visible { outline-offset: -2px; }
+.tab[aria-selected="true"] {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / .08), 0 0 0 1px var(--border);
+}
+.tab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.tab.is-off .tab-dot { background: transparent; box-shadow: inset 0 0 0 1.5px var(--muted); }
+.tab-name { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+.tab-count { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.tab-add {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin: 0 2px;
+  border-radius: 7px;
+  color: var(--muted);
+}
+.tab-add:hover { background: var(--surface); color: var(--text); }
+
+/* ---------- Ruleset panel ---------- */
+
+.panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin: 10px 16px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / .04);
+}
+.panel-head { display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 8px; border-bottom: 1px solid var(--border); }
+.ruleset-name {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  font-size: 14px;
+  font-weight: 650;
+}
+.ruleset-name:hover { border-color: var(--border); }
+.ruleset-name:focus { outline: none; border-color: var(--accent); background: var(--field); box-shadow: 0 0 0 1px var(--accent); }
+.panel.is-off .rules, .panel.is-off .rule-columns { filter: grayscale(1); }
+.panel.is-off .field { color: var(--muted); }
+
+.icon-btn { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; color: var(--muted); }
+.icon-btn:hover { background: var(--hover); color: var(--text); }
+.icon-btn--danger:hover { color: var(--danger); }
+
+/* Delete-ruleset asks "Delete?" before acting. */
+.confirm-text { display: none; }
+.icon-btn.is-confirming,
+.icon-btn.is-confirming:hover { width: auto; padding: 0 8px; background: var(--danger); color: var(--bg); font-size: 12px; font-weight: 600; }
+.icon-btn.is-confirming svg { display: none; }
+.icon-btn.is-confirming .confirm-text { display: inline; }
+
+/* ---------- Rules ---------- */
+
+.rule-columns {
+  display: grid;
+  grid-template-columns: var(--rule-cols);
+  column-gap: 8px;
+  padding: 10px 12px 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.col-block { grid-column: 2; }
+.col-redirect { grid-column: 4; }
+
+.rules { flex: 1 1 auto; min-height: 0; padding: 2px 12px 10px; overflow-y: auto; }
+.rule { display: grid; grid-template-columns: var(--rule-cols); align-items: center; column-gap: 8px; row-gap: 3px; padding: 4px 0; }
+
+.rule-check { display: grid; place-items: center; height: 32px; cursor: pointer; }
+.rule-check input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+
+.field {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  background: var(--field);
+  transition: border-color .12s, box-shadow .12s;
+}
+.field::placeholder { color: var(--muted); opacity: 1; }
+.field:hover { border-color: var(--text); }
+.field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.field.is-invalid { border-color: var(--danger); }
+.rule-arrow { color: var(--muted); }
+/* Off rules stay readable: grey and struck through rather than faded out. */
+.rule.is-off .field, .rule.is-off .rule-arrow { color: var(--muted); }
+.rule.is-off .field--block { text-decoration: line-through; }
+
+.rule-error, .rule-hint { grid-column: 2 / -1; font-size: 12px; }
+.rule-hint { color: var(--muted); }
+/* Errors carry an icon too, so they aren't signalled by colour alone. */
+.rule-error { display: flex; gap: 5px; align-items: baseline; color: var(--danger); }
+.rule-error::before {
+  content: "";
+  flex: none;
+  width: 12px;
+  height: 12px;
+  transform: translateY(2px);
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5h1.5v5h-1.5zm0 6.25h1.5v1.5h-1.5z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.empty { display: none; padding: 20px 12px 24px; color: var(--muted); text-align: center; }
+.rules:empty + .empty { display: block; }
+
+/* Every ruleset has been deleted. */
+.panel.is-empty .panel-head,
+.panel.is-empty .rule-columns,
+.panel.is-empty .rules,
+.panel.is-empty .empty { display: none; }
+.no-rulesets { padding: 28px 16px; color: var(--muted); text-align: center; }
+
+/* ---------- Footer ---------- */
+
+.bottombar { display: flex; align-items: center; gap: 8px; padding: 12px 16px 14px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: 8px; font-weight: 600; }
+.btn--ghost { border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+.btn--ghost:hover { border-color: var(--border-strong); color: var(--text); }
+.btn--primary { margin-left: auto; background: var(--accent); color: var(--accent-ink); }
+.btn--primary:hover { filter: brightness(1.07); }
+
+/* ---------- Switches ---------- */
+
+.switch { position: relative; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--switch-off);
+  transition: background-color .15s ease;
+}
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .3);
+  transition: transform .15s ease;
+}
+.switch input:checked + .switch-track { background: var(--accent); }
+.switch input:checked + .switch-track::after { transform: translateX(14px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--focus); outline-offset: 2px; }
+.switch-text { color: var(--muted); font-weight: 550; }
+.switch input:checked ~ .switch-text { color: var(--text); }

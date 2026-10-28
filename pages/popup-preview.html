@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<!--
+  A non-interactive copy of the popup for the help page, styled by the real
+  popup.css so it always matches. The numbered callouts mark the three switches
+  the help page explains. Like every page shown in a tab, it uses no extension
+  APIs.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <title>The SimpleBlock popup</title>
+  <link rel="stylesheet" href="../popup/popup.css">
+  <script src="../shared/theme.js"></script>
+  <style>
+    /* The help page lays this out at the popup's base size. */
+    :root { --zoom: 1; }
+    body { max-height: none; }
+    /* Nothing scrolls here, and the rule list mustn't clip callout 3. */
+    .rules { overflow: visible; }
+    .rule-check { position: relative; }
+    .callout {
+      position: absolute;
+      z-index: 1;
+      top: -12px;
+      left: -14px;
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      /* A fixed red: white numbers stay readable (4.95:1) in both themes. */
+      border: 1.5px solid light-dark(#000, #fff);
+      background: #d1342f;
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 700;
+      line-height: 1;
+      box-shadow: 0 0 0 2px var(--surface);
+    }
+  </style>
+</head>
+<body inert>
+  <header class="topbar">
+    <img class="brand-icon" src="../icons/simpleblock-48.png" alt="" width="24" height="24">
+    <h1 class="brand">SimpleBlock</h1>
+    <button class="icon-btn theme-toggle" type="button" aria-label="Dark theme">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 19.8 19.8 4.2"/><path d="M16.6 7.4a6.5 6.5 0 0 0-9.2 9.2"/><path d="M12 1.8v2.2M1.8 12H4M4.8 4.8l1.55 1.55"/></g><path d="M16.6 7.4a6.5 6.5 0 0 1-9.2 9.2z" fill="currentColor"/></svg>
+    </button>
+    <label class="switch switch--master">
+      <span class="callout">1</span>
+      <input type="checkbox" role="switch" checked>
+      <span class="switch-track"></span>
+      <span class="switch-text">Blocking</span>
+    </label>
+  </header>
+
+  <main class="workspace">
+    <div class="tabbar">
+      <div class="tabs" role="tablist">
+        <button class="tab" type="button" role="tab" aria-selected="true"><span class="tab-dot"></span><span class="tab-name">Focus</span><span class="tab-count">3</span></button>
+        <button class="tab" type="button" role="tab" aria-selected="false"><span class="tab-dot"></span><span class="tab-name">Work</span><span class="tab-count">2</span></button>
+        <button class="tab" type="button" role="tab" aria-selected="false"><span class="tab-dot"></span><span class="tab-name">Socials</span><span class="tab-count">5</span></button>
+        <button class="tab is-off" type="button" role="tab" aria-selected="false"><span class="tab-dot"></span><span class="tab-name">News</span><span class="tab-count">3</span></button>
+      </div>
+      <button class="tab-add" type="button" aria-label="New category">
+        <svg viewBox="0 0 16 16" width="16" height="16"><path d="M8 3.5v9M3.5 8h9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <section class="panel" role="tabpanel">
+      <div class="panel-head">
+        <input class="ruleset-name" type="text" value="Focus" aria-label="Category name">
+        <label class="switch">
+          <span class="callout">2</span>
+          <input type="checkbox" role="switch" checked>
+          <span class="switch-track"></span>
+          <span class="switch-text">Active</span>
+        </label>
+        <button class="icon-btn icon-btn--danger" type="button" aria-label="Delete category">
+          <svg viewBox="0 0 16 16" width="16" height="16"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+
+      <div class="rule-columns"><span class="col-block">Block</span><span class="col-redirect">Redirect to</span></div>
+
+      <ul class="rules">
+        <li class="rule">
+          <label class="rule-check"><span class="callout">3</span><input type="checkbox" aria-label="Use rule 1" checked></label>
+          <input class="field field--block" type="text" value="reddit.com*" aria-label="Block">
+          <span class="rule-arrow"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <input class="field field--redirect" type="text" placeholder="SimpleBlock page" aria-label="Redirect to">
+          <button class="icon-btn rule-remove" type="button" aria-label="Remove rule"><svg viewBox="0 0 16 16" width="14" height="14"><path d="m4.5 4.5 7 7m0-7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        </li>
+        <li class="rule">
+          <label class="rule-check"><input type="checkbox" aria-label="Use rule 2" checked></label>
+          <input class="field field--block" type="text" value="facebook.com" aria-label="Block">
+          <span class="rule-arrow"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <input class="field field--redirect" type="text" value="facebook.com/messages" aria-label="Redirect to">
+          <button class="icon-btn rule-remove" type="button" aria-label="Remove rule"><svg viewBox="0 0 16 16" width="14" height="14"><path d="m4.5 4.5 7 7m0-7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        </li>
+        <li class="rule is-off">
+          <label class="rule-check"><input type="checkbox" aria-label="Use rule 3"></label>
+          <input class="field field--block" type="text" value="youtube.com/shorts*" aria-label="Block">
+          <span class="rule-arrow"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <input class="field field--redirect" type="text" placeholder="SimpleBlock page" aria-label="Redirect to">
+          <button class="icon-btn rule-remove" type="button" aria-label="Remove rule"><svg viewBox="0 0 16 16" width="14" height="14"><path d="m4.5 4.5 7 7m0-7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="bottombar">
+    <button class="btn btn--ghost" type="button">Help</button>
+    <button class="btn btn--primary" type="button">
+      <svg viewBox="0 0 16 16" width="14" height="14"><path d="M8 3.5v9M3.5 8h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Add rule
+    </button>
+  </footer>
+</body>
+</html>

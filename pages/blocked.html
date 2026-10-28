@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Blocked</title>
+  <link rel="icon" href="../icons/simpleblock-48.png">
+  <link rel="stylesheet" href="page.css">
+  <script src="../shared/theme.js"></script>
+  <!-- Deliberately a classic, blocking script: a redirect rule forwards before anything paints. -->
+  <script src="blocked.js"></script>
+</head>
+<body class="blocked">
+  <main class="blocked-card">
+    <img class="blocked-icon" src="../icons/simpleblock-48.png" alt="" width="48" height="48">
+    <h1>Blocked by SimpleBlock</h1>
+    <a class="blocked-url" id="blocked-url"></a>
+    <p class="blocked-reason" id="blocked-reason" hidden>
+      Matched <code id="blocked-rule"></code> in <strong id="blocked-set"></strong>
+    </p>
+
+    <figure class="quote">
+      <blockquote id="quote-text"></blockquote>
+      <figcaption id="quote-author"></figcaption>
+    </figure>
+
+    <div class="blocked-actions">
+      <button class="btn btn--ghost" id="go-back" type="button" hidden>Go back</button>
+      <a class="btn btn--ghost" href="help.html">How SimpleBlock works</a>
+    </div>
+  </main>
+</body>
+</html>

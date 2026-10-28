@@ -1,10 +1,19 @@
 {
     "manifest_version": 2,
     "name": "SimpleBlock",
-    "version": "1.0.1",
+    "version": "2.0.0",
     "description": "Add simple blocklists to help you focus",
     "icons": {
         "48": "icons/simpleblock-48.png"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "{2e283951-3d90-4e5a-8cd5-ad6c73455d19}",
+            "strict_min_version": "140.0",
+            "data_collection_permissions": {
+                "required": ["none"]
+            }
+        }
     },
     "permissions": [
         "storage",
@@ -16,19 +25,12 @@
             "48": "icons/simpleblock-48.png"
         },
         "default_title": "SimpleBlock",
-        "default_popup": "popup.html",
-        "browser_style": true
+        "default_popup": "popup/popup.html"
     },
     "background": {
         "scripts": [
-            "scripts/background.js"
-        ]
-    },
-    "web_accessible_resources": [
-        "redirect.html",
-        "style.css",
-        "scripts/launch_help.js",
-        "lib/bootstrap.css",
-        "lib/bootstrap.min.js"
-    ]
+            "background/background.js"
+        ],
+        "type": "module"
+    }
 }
