@@ -4,6 +4,15 @@
 
 "use strict";
 
+// The version beside the title, read from the manifest like any other file
+// (an ordinary page request, not an extension API).
+fetch("../manifest.json")
+  .then((response) => response.json())
+  .then(({ version }) => {
+    document.getElementById("version").textContent = `v${version}`;
+  })
+  .catch(() => {}); // Opened straight from disk, say: just leave it out.
+
 (() => {
   for (const frame of document.querySelectorAll("iframe.fit-frame")) {
     const fit = () => {
