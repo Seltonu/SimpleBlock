@@ -17,6 +17,13 @@
  * toggling blocking on and off again never reloads tabs you didn't look at.
  * Covered tabs go back to their page as soon as it's no longer blocked.
  *
+ * Don't reload blocked tabs ("keepPages"): with that setting on (and website access granted,
+ * which Firefox only asks for when it's switched on), a page that's already
+ * open is covered in place by content/cover.js instead of being navigated
+ * away, so nothing about it is lost; in that mode background tabs are covered
+ * straight away too. New page loads and redirect rules still navigate, and so
+ * does any page extensions aren't allowed to touch.
+ *
  * The popup streams edits over a port and this script is the only writer of
  * the stored config. Keystrokes update the rules used for new navigations
  * immediately but only re-check open tabs once an edit is committed (Enter,
@@ -24,10 +31,22 @@
  * doesn't flicker tabs.
  */
 
-import { compileConfig, configFromLegacy, CONFIG_KEY, defaultConfig, findBlock, normalizeConfig, saveConfig } from "../shared/config.js";
+import {
+  compileConfig,
+  configFromLegacy,
+  CONFIG_KEY,
+  defaultConfig,
+  findBlock,
+  normalizeConfig,
+  normalizeSettings,
+  saveConfig,
+  SETTINGS_KEY,
+} from "../shared/config.js";
 import { unwrapUrl } from "../shared/patterns.js";
 
 const BLOCKED_PAGE = browser.runtime.getURL("pages/blocked.html");
+const HELP_PAGE = browser.runtime.getURL("pages/help.html");
+const ALL_SITES = { origins: ["<all_urls>"] };
 const SAVE_DELAY_MS = 400;
 const CLAIM_MS = 2000;
 
@@ -43,25 +62,40 @@ let canSave = true;
 // last done to each tab so it's only acted on once.
 const claims = new Map(); // tabId -> { key, url, at }
 
+// Don't reload blocked tabs: the setting, and whether Firefox has granted website access.
+let keepPagesSetting = false;
+let canAccessSites = false;
+const coverPorts = new Map(); // tabId -> port to the cover script in that tab's page
+const coveredTabs = new Set(); // tabs whose page is covered in place right now
+const pendingCovers = new Map(); // tabId -> what to show once a freshly injected cover connects
+
 // Listeners must be registered synchronously at startup; handlers wait for this.
-const ready = loadOrMigrate()
-  .catch((error) => {
+const ready = Promise.all([
+  loadOrMigrate().catch((error) => {
     console.error("SimpleBlock: couldn't load settings", error);
     canSave = false;
     return defaultConfig();
-  })
-  .then(setConfig);
+  }),
+  loadKeepPages().catch((error) => console.error("SimpleBlock: couldn't load options", error)),
+]).then(([loaded]) => setConfig(loaded));
 
 ready.then(reconcileAll);
 
 browser.webNavigation.onBeforeNavigate.addListener((details) => onNavigation(details, false));
 browser.webNavigation.onCommitted.addListener((details) => onNavigation(details, true));
-browser.webNavigation.onHistoryStateUpdated.addListener((details) => onNavigation(details, true));
+browser.webNavigation.onHistoryStateUpdated.addListener((details) => onNavigation(details, true, true));
 browser.tabs.onActivated.addListener(({ tabId }) => reconcileById(tabId));
 browser.tabs.onAttached.addListener((tabId) => reconcileById(tabId));
 browser.tabs.onUpdated.addListener((tabId, change, tab) => reconcileTab(tab), { properties: ["audible"] });
-browser.tabs.onRemoved.addListener((tabId) => claims.delete(tabId));
+browser.tabs.onRemoved.addListener((tabId) => {
+  claims.delete(tabId);
+  coveredTabs.delete(tabId);
+  pendingCovers.delete(tabId);
+});
 browser.runtime.onConnect.addListener(onConnect);
+browser.storage.onChanged.addListener(onStorageChanged);
+browser.permissions.onAdded.addListener(onPermissionsChanged);
+browser.permissions.onRemoved.addListener(onPermissionsChanged);
 
 /* ---------- Settings ---------- */
 
@@ -102,7 +136,45 @@ function applyNow() {
   return applying;
 }
 
+async function loadKeepPages() {
+  const [stored, granted] = await Promise.all([
+    browser.storage.local.get(SETTINGS_KEY),
+    browser.permissions.contains(ALL_SITES),
+  ]);
+  keepPagesSetting = normalizeSettings(stored[SETTINGS_KEY]).keepPages;
+  canAccessSites = granted;
+}
+
+function keepPages() {
+  return keepPagesSetting && canAccessSites;
+}
+
+function onStorageChanged(changes, area) {
+  if (area !== "local" || !(SETTINGS_KEY in changes)) return;
+  keepPagesSetting = normalizeSettings(changes[SETTINGS_KEY].newValue).keepPages;
+  keepPagesChanged();
+}
+
+// Website access can also be granted or revoked in about:addons.
+async function onPermissionsChanged() {
+  canAccessSites = await browser.permissions.contains(ALL_SITES);
+  keepPagesChanged();
+}
+
+/** Re-checks open tabs: covers lift or appear, and blocked tabs switch to the other mode. */
+function keepPagesChanged() {
+  // Queued behind any save-and-reconcile already running, like applyNow().
+  const previous = applying;
+  applying = Promise.all([ready, previous])
+    .then(reconcileAll)
+    .catch((error) => console.error("SimpleBlock:", error));
+}
+
 function onConnect(port) {
+  if (port.name === "cover") {
+    onCoverConnect(port);
+    return;
+  }
   if (port.name !== "popup") return;
   ready
     .then(() => port.postMessage({ type: "init", config }))
@@ -120,12 +192,22 @@ function onConnect(port) {
 
 /* ---------- Navigations ---------- */
 
-async function onNavigation({ tabId, frameId, url }, committed) {
+async function onNavigation({ tabId, frameId, url }, committed, sameDocument = false) {
   if (frameId !== 0 || tabId === browser.tabs.TAB_ID_NONE) return;
   await ready;
 
   // Our own navigation (or something else) landed, so the claim has served its purpose.
   if (committed && claims.get(tabId)?.url !== url) claims.delete(tabId);
+  if (committed && !sameDocument) {
+    // A new document replaced the page, and any cover went with it. Lift the old
+    // one anyway, in case that page is kept in the back/forward cache and comes
+    // back later; if it's still blocked then, it'll be blocked again.
+    const oldPort = coverPorts.get(tabId);
+    if (oldPort) post(oldPort, { type: "uncover" });
+    coveredTabs.delete(tabId);
+    coverPorts.delete(tabId);
+    pendingCovers.delete(tabId);
+  }
 
   const block = findBlock(activeRules, url);
   if (!block) {
@@ -134,6 +216,10 @@ async function onNavigation({ tabId, frameId, url }, committed) {
     if (committed) reconcileById(tabId, url);
     return;
   }
+
+  // A page that's already open (moving within a single-page site like YouTube)
+  // can be covered rather than replaced.
+  if (sameDocument && keepPages() && (await coverTab(tabId, url, block))) return;
 
   // Once the page has committed, replace its history entry so Back doesn't lead
   // straight back into the block. Before that there's nothing to replace, unless
@@ -173,6 +259,22 @@ async function reconcileTab(tab) {
   }
 
   const block = findBlock(activeRules, tab.url);
+  if (coveredTabs.has(tab.id)) {
+    if (block && keepPages()) {
+      // Still covered. Videos are paused, but catch anything else that starts playing.
+      if (tab.audible && !tab.mutedInfo?.muted) await setMuted(tab.id, true);
+      return;
+    }
+    uncoverTab(tab.id);
+  }
+
+  // Covering costs nothing, so with keepPages every blocked tab is covered now.
+  if (block && keepPages() && (await coverTab(tab.id, tab.url, block))) {
+    // The cover pauses the page's own videos, but not ones inside frames.
+    if (tab.audible && !tab.mutedInfo?.muted) await setMuted(tab.id, true);
+    return;
+  }
+
   if (block && tab.active) {
     await blockTab(tab.id, tab.url, block, true);
   } else if (block && tab.audible && !tab.mutedInfo?.muted) {
@@ -213,6 +315,95 @@ async function setMuted(tabId, muted) {
     await browser.tabs.update(tabId, { muted });
   } catch {
     // The tab closed in the meantime.
+  }
+}
+
+/* ---------- Covering pages in place ---------- */
+
+/** Covers a tab's page with content/cover.js. Returns false if it can't, so the caller navigates instead. */
+async function coverTab(tabId, url, block) {
+  // A redirect has to navigate; the cover can only show the block message.
+  if (block.redirectUrl) return false;
+
+  const cover = {
+    url: unwrapUrl(url),
+    rule: block.rule.block,
+    set: block.ruleset.name,
+    theme: chosenTheme(),
+    quote: quotePreference(),
+  };
+  coveredTabs.add(tabId);
+  const port = coverPorts.get(tabId);
+  if (port && post(port, { type: "cover", ...cover })) return true;
+
+  pendingCovers.set(tabId, cover);
+  try {
+    await browser.tabs.executeScript(tabId, { file: "/shared/quotes.js" });
+    await browser.tabs.executeScript(tabId, { file: "/content/cover.js" });
+    return true;
+  } catch (error) {
+    // A page extensions can't touch (addons.mozilla.org, the PDF viewer, about: pages...).
+    console.warn(`SimpleBlock: couldn't cover ${url}, replacing it instead:`, error.message);
+    pendingCovers.delete(tabId);
+    coveredTabs.delete(tabId);
+    return false;
+  }
+}
+
+function uncoverTab(tabId) {
+  coveredTabs.delete(tabId);
+  pendingCovers.delete(tabId);
+  const port = coverPorts.get(tabId);
+  if (port) post(port, { type: "uncover" });
+}
+
+function onCoverConnect(port) {
+  const tabId = port.sender?.tab?.id;
+  if (tabId === undefined || port.sender.frameId !== 0) return;
+  coverPorts.set(tabId, port);
+  port.onDisconnect.addListener(() => {
+    // The page went away (or was replaced); a newer cover in the tab may have taken over.
+    if (coverPorts.get(tabId) !== port) return;
+    coverPorts.delete(tabId);
+    coveredTabs.delete(tabId);
+  });
+  port.onMessage.addListener((message) => {
+    if (message?.type === "help") browser.tabs.create({ url: HELP_PAGE });
+  });
+  const pending = pendingCovers.get(tabId);
+  pendingCovers.delete(tabId);
+  // Only if the tab still needs it: it may have moved on to an allowed page
+  // while the script was being injected.
+  if (pending && coveredTabs.has(tabId)) post(port, { type: "cover", ...pending });
+}
+
+function post(port, message) {
+  try {
+    port.postMessage(message);
+    return true;
+  } catch {
+    return false; // The page is already gone.
+  }
+}
+
+// The cover runs inside the page, where SimpleBlock's localStorage isn't
+// reachable, so these display preferences travel with the cover message.
+
+/** The light/dark theme picked in the popup (see shared/theme.js), or null to follow Firefox. */
+function chosenTheme() {
+  try {
+    return localStorage.getItem("theme");
+  } catch {
+    return null;
+  }
+}
+
+/** Which quote to show, as saved by the settings page (see shared/quotes.js). */
+function quotePreference() {
+  try {
+    return JSON.parse(localStorage.getItem("quote")) ?? {};
+  } catch {
+    return {};
   }
 }
 

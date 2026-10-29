@@ -1,0 +1,106 @@
+/* The settings page; builds on pages/page.css. */
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.settings { max-width: 720px; }
+
+/* Text on the left, switch on the right, anything extra full-width underneath. */
+.setting {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 24px;
+  margin-top: 28px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.setting-text { flex: 1; }
+.setting-title { font-size: 16px; font-weight: 650; cursor: pointer; }
+.setting-desc { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+/* Shown only until website access has been granted. ".setting" outranks the
+   help page's ".help p" text colour, which would otherwise turn this black. */
+.setting .setting-note {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid light-dark(#e6c86a, #6b5a1e);
+  border-radius: 8px;
+  background: light-dark(#fff6d6, #2f2810);
+  color: light-dark(#7d5800, #f2d27a);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.setting .setting-note[hidden] { display: none; }
+.setting-note a { color: inherit; font-weight: 600; }
+.setting-note::before {
+  content: "";
+  flex: none;
+  width: 15px;
+  height: 15px;
+  /* Centred on the first line of text. */
+  margin-top: calc((1.6em - 15px) / 2);
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5h1.5v5h-1.5zm0 6.25h1.5v1.5h-1.5z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.setting-status { min-height: 1.6em; margin: 10px 4px 0; color: var(--muted); font-size: 14px; }
+.setting-status + .setting { margin-top: 4px; }
+
+.custom-quote { display: grid; gap: 6px; grid-column: 1 / -1; min-width: 0; margin: 16px 0 0; padding: 0; border: 0; }
+/* Locked fields are filled in a darker grey rather than faded out. */
+.custom-quote:disabled .field-label { color: var(--muted); }
+.custom-quote:disabled .field {
+  background: light-dark(#e6e5e0, #0e0f11);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+.setting .custom-quote-hint { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.custom-quote:enabled .custom-quote-hint { display: none; }
+.field-label { margin-top: 4px; font-size: 13px; font-weight: 600; }
+.field {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid light-dark(#8e8e8b, #6a6c78);
+  border-radius: 8px;
+  background: light-dark(#fafaf9, #17181b);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+textarea.field { resize: vertical; }
+.field::placeholder { color: var(--muted); opacity: 1; }
+.field:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+/* Same switch as the popup's. */
+.switch { position: relative; flex: none; margin-top: 2px; cursor: pointer; }
+.switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.switch-track {
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: light-dark(#8e8e8b, #6a6c78);
+  transition: background-color .15s ease;
+}
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .3);
+  transition: transform .15s ease;
+}
+.switch input:checked + .switch-track { background: var(--accent); }
+.switch input:checked + .switch-track::after { transform: translateX(16px); }
+.switch input:focus-visible + .switch-track { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .switch-track, .switch-track::after { transition: none; }
+}

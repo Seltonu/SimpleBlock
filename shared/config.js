@@ -22,6 +22,8 @@ import { compilePattern, parseRedirect, parseUrl } from "./patterns.js";
 
 export const CONFIG_KEY = "config";
 export const UI_KEY = "ui";
+// Options from the settings page, kept apart from the rules: { keepPages }.
+export const SETTINGS_KEY = "settings";
 const SCHEMA = 2;
 
 export function newId() {
@@ -68,6 +70,11 @@ export function normalizeConfig(raw) {
     }));
 
   return { schema: SCHEMA, enabled: raw.enabled !== false, rulesets };
+}
+
+/** Settings page options, with defaults for anything missing. */
+export function normalizeSettings(raw) {
+  return { keepPages: raw?.keepPages === true };
 }
 
 export function saveConfig(config) {

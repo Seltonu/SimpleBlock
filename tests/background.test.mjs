@@ -29,17 +29,40 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 5));
 let instance = 0;
 
 /** Loads a fresh copy of the background script with the given storage and tabs. */
-async function startBackground({ config, legacy = {}, tabs = [], failGet = false, failSet = false } = {}) {
+async function startBackground({
+  config,
+  legacy = {},
+  tabs = [],
+  failGet = false,
+  failSet = false,
+  settings,
+  granted = false,
+  uncoverable = [],
+  holdConnects = false,
+} = {}) {
+  const heldConnects = []; // with holdConnects, injected cover scripts connect only when released
   const stored = config ? { config: structuredClone(config) } : {};
+  if (settings) stored.settings = structuredClone(settings);
+  const permissions = { granted };
+  const injected = []; // { tabId, file }
+  const coverPorts = new Map(); // tabId -> fake port of the injected cover script
+  const created = [];
   const tabsById = new Map(
     tabs.map((tab) => [tab.id, { active: false, audible: false, discarded: false, mutedInfo: { muted: false }, ...tab }]),
   );
   const updates = [];
 
   globalThis.localStorage = makeLocalStorage(legacy);
+  const storageChanged = makeEvent();
   globalThis.browser = {
     runtime: { id: EXTENSION_ID, getURL: (path) => `moz-extension://uuid/${path}`, onConnect: makeEvent() },
+    permissions: {
+      contains: async () => permissions.granted,
+      onAdded: makeEvent(),
+      onRemoved: makeEvent(),
+    },
     storage: {
+      onChanged: storageChanged,
       local: {
         get: async (key) => {
           if (failGet) throw new Error("storage is broken");
@@ -47,7 +70,9 @@ async function startBackground({ config, legacy = {}, tabs = [], failGet = false
         },
         set: async (values) => {
           if (failSet) throw new Error("storage is full");
+          const changes = Object.fromEntries(Object.entries(values).map(([key, value]) => [key, { newValue: structuredClone(value) }]));
           Object.assign(stored, structuredClone(values));
+          storageChanged.emit(changes, "local");
         },
       },
     },
@@ -58,6 +83,26 @@ async function startBackground({ config, legacy = {}, tabs = [], failGet = false
       onAttached: makeEvent(),
       onUpdated: makeEvent(),
       onRemoved: makeEvent(),
+      create: async (props) => created.push(props),
+      // Simulates injecting content/cover.js: the script connects back over a port.
+      executeScript: async (tabId, { file }) => {
+        if (uncoverable.includes(tabId)) throw new Error("Missing host permission for the tab");
+        injected.push({ tabId, file });
+        if (file !== "/content/cover.js" || coverPorts.has(tabId)) return [];
+        const port = {
+          name: "cover",
+          sender: { tab: { id: tabId }, frameId: 0 },
+          sent: [],
+          onMessage: makeEvent(),
+          onDisconnect: makeEvent(),
+        };
+        port.postMessage = (message) => port.sent.push(structuredClone(message));
+        coverPorts.set(tabId, port);
+        const connect = () => globalThis.browser.runtime.onConnect.emit(port);
+        if (holdConnects) heldConnects.push(connect);
+        else connect();
+        return [];
+      },
       query: async (filter) =>
         [...tabsById.values()]
           .filter((tab) => Object.entries(filter).every(([key, value]) => tab[key] === value))
@@ -86,6 +131,24 @@ async function startBackground({ config, legacy = {}, tabs = [], failGet = false
     stored,
     tabsById,
     updates,
+    injected,
+    coverPorts,
+    created,
+    async releaseConnects() {
+      for (const connect of heldConnects.splice(0)) await connect();
+      await settle();
+    },
+    /** The last cover/uncover message a tab's cover script received. */
+    coverState: (tabId) => coverPorts.get(tabId)?.sent.at(-1)?.type ?? null,
+    async setKeepPages(keepPages) {
+      await b.storage.local.set({ settings: { keepPages } });
+      await settle();
+    },
+    async revokeAccess() {
+      permissions.granted = false;
+      await b.permissions.onRemoved.emit({ origins: ["<all_urls>"] });
+      await settle();
+    },
     localStorage: globalThis.localStorage,
     navigate: (event, details) => b.webNavigation[event].emit({ frameId: 0, ...details }),
     connectPopup() {
@@ -388,4 +451,197 @@ test("tabs the user muted are never unmuted", async () => {
   popup.onMessage.emit({ type: "update", config: config([["youtube.com*"]], { enabled: false }), apply: true });
   await settle();
   assert.equal(bg.updates.length, 0, "a tab the user muted isn't unmuted");
+});
+
+/* ---------- Keep pages underneath ---------- */
+
+const KEEP = { settings: { keepPages: true }, granted: true };
+
+test("with Keep pages underneath, open tabs are covered in place instead of navigated", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["reddit.com*"]], { enabled: false }),
+    tabs: [
+      { id: 1, url: "https://www.reddit.com/r/all", active: true },
+      { id: 2, url: "https://www.reddit.com/r/linux" },
+      { id: 3, url: "https://example.org/" },
+    ],
+  });
+  const popup = bg.connectPopup();
+  await settle();
+  popup.onMessage.emit({ type: "update", config: config([["reddit.com*"]]), apply: true });
+  await settle();
+
+  assert.deepEqual(bg.updates.filter((u) => "url" in u), [], "no tab is navigated");
+  // Background tabs too: covering doesn't lose anything, so there's no reason to wait.
+  for (const tabId of [1, 2]) {
+    assert.deepEqual(
+      bg.injected.filter((i) => i.tabId === tabId).map((i) => i.file),
+      ["/shared/quotes.js", "/content/cover.js"],
+    );
+    assert.equal(bg.coverState(tabId), "cover");
+  }
+  assert.deepEqual(bg.coverPorts.get(1).sent[0], {
+    type: "cover",
+    url: "https://www.reddit.com/r/all",
+    rule: "reddit.com*",
+    set: "Focus",
+    theme: null,
+    quote: {},
+  });
+  assert.ok(!bg.injected.some((i) => i.tabId === 3));
+
+  // Pausing lifts the covers; the pages were never touched.
+  popup.onMessage.emit({ type: "update", config: config([["reddit.com*"]], { enabled: false }), apply: true });
+  await settle();
+  assert.equal(bg.coverState(1), "uncover");
+  assert.equal(bg.coverState(2), "uncover");
+  assert.deepEqual(bg.updates.filter((u) => "url" in u), []);
+});
+
+test("covering again reuses the cover script already in the page", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+  });
+  assert.equal(bg.coverState(1), "cover");
+  const popup = bg.connectPopup();
+  await settle();
+  popup.onMessage.emit({ type: "update", config: config([["reddit.com*"]], { enabled: false }), apply: true });
+  await settle();
+  popup.onMessage.emit({ type: "update", config: config([["reddit.com*"]]), apply: true });
+  await settle();
+  assert.equal(bg.coverState(1), "cover");
+  assert.equal(bg.injected.filter((i) => i.file === "/content/cover.js").length, 1);
+});
+
+test("in-page navigation to a blocked URL is covered; new page loads still go to the blocked page", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["youtube.com/shorts*"]]),
+    tabs: [{ id: 1, url: "https://www.youtube.com/", active: true }],
+  });
+  await bg.navigate("onHistoryStateUpdated", { tabId: 1, url: "https://www.youtube.com/shorts/abc" });
+  await settle();
+  assert.equal(bg.coverState(1), "cover");
+  assert.equal(bg.updates.length, 0);
+
+  // ...and moving on to an allowed page within the site lifts it.
+  await bg.navigate("onHistoryStateUpdated", { tabId: 1, url: "https://www.youtube.com/watch?v=1" });
+  await settle();
+  assert.equal(bg.coverState(1), "uncover");
+
+  await bg.navigate("onBeforeNavigate", { tabId: 1, url: "https://www.youtube.com/shorts/xyz" });
+  assert.equal(blockedParams(bg.updates.at(-1).url).url, "https://www.youtube.com/shorts/xyz");
+});
+
+test("redirect rules and pages extensions can't touch still navigate", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["facebook.com", "facebook.com/messages"], ["reddit.com*"]]),
+    tabs: [
+      { id: 1, url: "https://www.facebook.com/", active: true },
+      { id: 2, url: "https://www.reddit.com/", active: true },
+    ],
+    uncoverable: [2],
+  });
+  assert.equal(blockedParams(bg.updates.find((u) => u.id === 1).url).to, "https://facebook.com/messages");
+  assert.ok(bg.updates.find((u) => u.id === 2).url.startsWith(BLOCKED), "falls back to the blocked page");
+  assert.equal(bg.coverState(1), null);
+});
+
+test("without website access, the setting does nothing", async () => {
+  const bg = await startBackground({
+    settings: { keepPages: true },
+    granted: false,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+  });
+  assert.equal(bg.injected.length, 0);
+  assert.ok(bg.updates[0].url.startsWith(BLOCKED));
+});
+
+test("switching the setting off, or revoking access, lifts covers and blocks the usual way", async () => {
+  for (const turnOff of [(bg) => bg.setKeepPages(false), (bg) => bg.revokeAccess()]) {
+    const bg = await startBackground({
+      ...KEEP,
+      config: config([["reddit.com*"]]),
+      tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+    });
+    assert.equal(bg.coverState(1), "cover");
+    await turnOff(bg);
+    assert.equal(bg.coverState(1), "uncover");
+    assert.ok(bg.updates.at(-1).url.startsWith(BLOCKED), "the visible tab is then blocked by navigating");
+  }
+});
+
+test("switching the setting on covers open tabs straight away", async () => {
+  const bg = await startBackground({
+    granted: true,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 2, url: "https://www.reddit.com/", active: false }],
+  });
+  assert.equal(bg.injected.length, 0, "a background tab waits while the setting is off");
+  await bg.setKeepPages(true);
+  assert.equal(bg.coverState(2), "cover");
+});
+
+test("a cover whose page went away is injected afresh next time", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+  });
+  const port = bg.coverPorts.get(1);
+  bg.coverPorts.delete(1);
+  await port.onDisconnect.emit();
+  await bg.navigate("onHistoryStateUpdated", { tabId: 1, url: "https://www.reddit.com/r/all" });
+  await settle();
+  assert.equal(bg.injected.filter((i) => i.file === "/content/cover.js").length, 2);
+  assert.equal(bg.coverState(1), "cover");
+});
+
+test("the cover's help button opens the help page", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+  });
+  await bg.coverPorts.get(1).onMessage.emit({ type: "help" });
+  assert.deepEqual(bg.created, [{ url: "moz-extension://uuid/pages/help.html" }]);
+});
+
+test("a cover that connects after its tab moved on to an allowed page isn't shown", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    holdConnects: true,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+  });
+  // The script is injected, but before it connects the tab loads an allowed page.
+  await bg.navigate("onCommitted", { tabId: 1, url: "https://example.org/" });
+  await bg.releaseConnects();
+  assert.deepEqual(bg.coverPorts.get(1).sent, []);
+});
+
+test("leaving a covered page lifts its cover, in case it's restored from the back/forward cache", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["reddit.com*"]]),
+    tabs: [{ id: 1, url: "https://www.reddit.com/", active: true }],
+  });
+  assert.equal(bg.coverState(1), "cover");
+  await bg.navigate("onCommitted", { tabId: 1, url: "https://example.org/" });
+  assert.equal(bg.coverState(1), "uncover");
+});
+
+test("a covered tab that's playing sound is muted too", async () => {
+  const bg = await startBackground({
+    ...KEEP,
+    config: config([["youtube.com*"]]),
+    tabs: [{ id: 1, url: "https://www.youtube.com/watch?v=1", audible: true }],
+  });
+  assert.equal(bg.coverState(1), "cover");
+  assert.equal(bg.tabsById.get(1).mutedInfo.muted, true);
 });

@@ -27,32 +27,6 @@
     return;
   }
 
-  const QUOTES = [
-    { text: "The seed of every habit is a single, tiny decision.", author: "James Clear" },
-    {
-      text: "Your results are the product of either personal focus or personal distractions. The choice is yours.",
-      author: "John Di Lemme",
-    },
-    { text: "Discipline is the bridge between goals and accomplishments.", author: "Jim Rohn" },
-    {
-      text: "Concentrate all your thoughts upon the work at hand. The sun's rays do not burn until brought to a focus.",
-      author: "Alexander Graham Bell",
-    },
-    { text: "How we spend our days is, of course, how we spend our lives.", author: "Annie Dillard" },
-    { text: "It is not that we have a short time to live, but that we waste a lot of it.", author: "Seneca" },
-    {
-      text: "Almost everything will work again if you unplug it for a few minutes, including you.",
-      author: "Anne Lamott",
-    },
-    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Will Durant" },
-    { text: "My experience is what I agree to attend to.", author: "William James" },
-    { text: "You can do anything, but not everything.", author: "David Allen" },
-    { text: "Until we can manage time, we can manage nothing else.", author: "Peter Drucker" },
-    { text: "Lost time is never found again.", author: "Benjamin Franklin" },
-    { text: "To do two things at once is to do neither.", author: "Publilius Syrus" },
-    { text: "Wherever you are, be all there.", author: "Jim Elliot" },
-    { text: "Focusing is about saying no.", author: "Steve Jobs" },
-  ];
 
   document.addEventListener("DOMContentLoaded", () => {
     const byId = (id) => document.getElementById(id);
@@ -74,9 +48,15 @@
       byId("blocked-reason").hidden = false;
     }
 
-    const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-    byId("quote-text").textContent = quote.text;
-    byId("quote-author").textContent = quote.author;
+    // A random quote, the user's own (see shared/quotes.js), or none.
+    const quote = globalThis.simpleBlockQuote?.(globalThis.simpleBlockQuotePreference());
+    if (quote) {
+      byId("quote-text").textContent = quote.text;
+      byId("quote-author").textContent = quote.author;
+      byId("quote-author").hidden = !quote.author;
+    } else {
+      byId("quote-text").closest("figure").hidden = true;
+    }
 
     if (history.length > 1) {
       const back = byId("go-back");

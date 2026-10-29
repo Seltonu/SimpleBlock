@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "SimpleBlock",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "description": "Add simple blocklists to help you focus",
     "icons": {
         "48": "icons/simpleblock-48.png"
@@ -20,12 +20,19 @@
         "tabs",
         "webNavigation"
     ],
+    "optional_permissions": [
+        "<all_urls>"
+    ],
     "browser_action": {
         "default_icon": {
             "48": "icons/simpleblock-48.png"
         },
         "default_title": "SimpleBlock",
         "default_popup": "popup/popup.html"
+    },
+    "options_ui": {
+        "page": "options/options.html",
+        "open_in_tab": true
     },
     "background": {
         "scripts": [

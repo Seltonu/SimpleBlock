@@ -3,7 +3,7 @@
 Stop endless scrolling and take control of your online habits with the SimpleBlock extension.
 Block rules are intentionally simple and flexible so you're in control. Quickly enable/disable your rules so <em>you</em> can decide when it's time to focus.
 
-![SimpleBlock popup](simpleblock_v2.png)
+![SimpleBlock popup](simpleblock_v2.1.png)
 
 ## Features
 
@@ -21,27 +21,19 @@ Install the extension from [Mozilla Add-ons](https://addons.mozilla.org/en-US/fi
 Download and unzip the project, then type `about:debugging` in your address bar in Firefox. 
 Under "This Firefox", find "Load Temporary Add-on" and load the `manifest.json` file.
 
+To package the extension for addons.mozilla.org, run this from the project folder.
+
+Deletes any old `SimpleBlock.zip`, then zips only the files the extension needs:
+
+```sh
+rm -f SimpleBlock.zip && zip -r -X SimpleBlock.zip manifest.json background popup pages shared options content icons/simpleblock-48.png -x '*.DS_Store'
+```
+
 ## Usage
 
-1. Click on the SimpleBlock icon (recommended to pin to toolbar for easy access).
+Click on the SimpleBlock icon (recommended you pin to your toolbar for easy access).
 
-2. Add or modify rules in the popup window. Ex:
-
-    - The following rule will block the <strong>homepage</strong> of Facebook, so you don't spend your time infinitely scrolling. <br> Still want to keep in touch with friends? Set it to redirect to your messages!
-        ```plaintext
-        Block: facebook.com
-        Redirect: facebook.com/messages
-        ```
-
-    - Want to block a <strong>whole</strong> website? <br> Add the wildcard <strong>*</strong> at the end of your block rule so nothing gets through!
-        ```plaintext
-        Block: facebook.com*
-        Redirect: youtube.com/watch?v=dQw4w9WgXcQ
-        ```
-
-3. Your rules are saved automatically when you exit.
-
-4. Need to concentrate? Toggle "Blocking". Break time? Toggle it off!
+![Example rules](rule_examples.png)
 
 
 ## Contributing

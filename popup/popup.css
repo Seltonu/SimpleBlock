@@ -294,6 +294,7 @@ body.is-paused .workspace,
 .btn { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: 8px; font-weight: 600; }
 .btn--ghost { border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
 .btn--ghost:hover { border-color: var(--border-strong); color: var(--text); }
+.btn--icon { justify-content: center; width: 32px; padding: 0; }
 .btn--primary { margin-left: auto; background: var(--accent); color: var(--accent-ink); }
 .btn--primary:hover { filter: brightness(1.07); }
 

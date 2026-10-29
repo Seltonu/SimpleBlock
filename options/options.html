@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>SimpleBlock settings</title>
+  <link rel="icon" href="../icons/simpleblock-48.png">
+  <link rel="stylesheet" href="../pages/page.css">
+  <link rel="stylesheet" href="options.css">
+  <script src="../shared/theme.js"></script>
+  <script type="module" src="options.js"></script>
+</head>
+<body>
+  <main class="help settings">
+    <header class="help-header">
+      <img src="../icons/simpleblock-48.png" alt="" width="40" height="40">
+      <h1>SimpleBlock settings</h1>
+    </header>
+
+    <section class="setting">
+      <div class="setting-text">
+        <label class="setting-title" for="keep-pages">Don't reload blocked tabs</label>
+        <p class="setting-desc" id="keep-pages-desc">We cover the page instead of navigating away, so you don't lose your place.</p>
+        <p class="setting-note" id="permission-note" hidden><span>
+          Requires permission to access data for all sites. We NEVER read or collect any data. You can view the
+          <a href="https://github.com/Seltonu/SimpleBlock" target="_blank" rel="noopener">code here</a>.
+        </span></p>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="keep-pages" role="switch" aria-describedby="keep-pages-desc">
+        <span class="switch-track" aria-hidden="true"></span>
+      </label>
+    </section>
+    <p class="setting-status" id="status" role="status"></p>
+
+    <section class="setting">
+      <div class="setting-text">
+        <label class="setting-title" for="random-quotes">Random quotes</label>
+        <p class="setting-desc" id="random-quotes-desc">Show a different motivational quote each time a page is blocked.</p>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="random-quotes" role="switch" aria-describedby="random-quotes-desc" checked>
+        <span class="switch-track" aria-hidden="true"></span>
+      </label>
+      <!-- Always visible; locked (via the fieldset) while random quotes are on. -->
+      <fieldset class="custom-quote" id="custom-quote" aria-describedby="custom-quote-hint">
+        <legend class="visually-hidden">Your own quote</legend>
+        <label class="field-label" for="quote-text">Your own quote</label>
+        <textarea class="field" id="quote-text" rows="2" placeholder="Optional"></textarea>
+        <label class="field-label" for="quote-author">Who said it</label>
+        <input class="field" id="quote-author" type="text" placeholder="Optional">
+        <p class="custom-quote-hint" id="custom-quote-hint">Turn off Random quotes to use your own.</p>
+      </fieldset>
+    </section>
+  </main>
+</body>
+</html>

@@ -26,6 +26,7 @@ const els = {
   rules: $("rules"),
   addRule: $("add-rule"),
   help: $("help"),
+  settings: $("settings"),
   tabTemplate: $("tab-template"),
   ruleTemplate: $("rule-template"),
 };
@@ -292,6 +293,14 @@ function bindEvents() {
   els.help.addEventListener("click", async () => {
     await browser.tabs.create({ url: browser.runtime.getURL("pages/help.html") });
     window.close();
+  });
+
+  els.settings.addEventListener("click", () => {
+    browser.runtime
+      .openOptionsPage()
+      // Should never be needed, but a dead button is worse than a plain tab.
+      .catch(() => browser.tabs.create({ url: browser.runtime.getURL("options/options.html") }))
+      .finally(() => window.close());
   });
 
   bindRulesetEvents();
