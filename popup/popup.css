@@ -63,12 +63,12 @@ svg { display: block; flex: none; }
   *, *::before, *::after { transition: none !important; }
 }
 
-/* A short cross-fade when the theme button is used (shared/theme.js adds the class). */
+/* Fallback fade for Firefox versions without view transitions (shared/theme.js adds the class). */
 :root.theme-changing,
 :root.theme-changing *,
 :root.theme-changing *::before,
 :root.theme-changing *::after {
-  transition: background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, fill .3s ease, stroke .3s ease;
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease;
 }
 
 /* ---------- Header ---------- */
@@ -82,15 +82,35 @@ svg { display: block; flex: none; }
 
 /* Empty (and so invisible) unless blocking is paused. */
 .paused-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   margin: 0 16px 10px;
   padding: 8px 12px;
+  border: 1px solid light-dark(#efb3ae, #7a2c26);
   border-radius: 8px;
-  background: light-dark(#fff4e0, #3a2a12);
-  color: light-dark(#8a4b00, #ffcc80);
-  font-size: 12px;
+  background: light-dark(#fdecea, #3a1715);
+  color: light-dark(#a3221d, #ffb4ab);
+  font-size: 12.5px;
+  font-weight: 600;
 }
-.paused-note:empty { margin: 0; padding: 0; }
-body.is-paused .workspace { filter: grayscale(1); }
+.paused-note::before {
+  content: "";
+  flex: none;
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5h1.5v5h-1.5zm0 6.25h1.5v1.5h-1.5z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+/* Collapsed rather than display:none, so screen readers still announce it when it fills. */
+.paused-note:empty { margin: 0; padding: 0; border: 0; }
+.paused-note:empty::before { content: none; }
+
+/* Paused, or an inactive category: switches, checkboxes and dots turn grey. Only
+   these colours change (rather than greying everything with a filter) so that red
+   stays red: errors, invalid fields and the delete button. */
+body.is-paused .workspace,
+.panel.is-off .rules { --accent: var(--muted); --ok: var(--muted); }
 
 /* ---------- Ruleset tabs ---------- */
 
@@ -183,12 +203,11 @@ body.is-paused .workspace { filter: grayscale(1); }
 }
 .ruleset-name:hover { border-color: var(--border); }
 .ruleset-name:focus { outline: none; border-color: var(--accent); background: var(--field); box-shadow: 0 0 0 1px var(--accent); }
-.panel.is-off .rules, .panel.is-off .rule-columns { filter: grayscale(1); }
 .panel.is-off .field { color: var(--muted); }
 
 .icon-btn { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 6px; color: var(--muted); }
 .icon-btn:hover { background: var(--hover); color: var(--text); }
-.icon-btn--danger:hover { color: var(--danger); }
+.icon-btn--danger, .icon-btn--danger:hover { color: var(--danger); }
 
 /* Delete-ruleset asks "Delete?" before acting. */
 .confirm-text { display: none; }
@@ -239,6 +258,14 @@ body.is-paused .workspace { filter: grayscale(1); }
 
 .rule-error, .rule-hint { grid-column: 2 / -1; font-size: 12px; }
 .rule-hint { color: var(--muted); }
+/* Firefox grows the popup a moment before the new line paints; fading the text in
+   turns that pause into a smooth appearance instead of a stutter. */
+.rule-error, .rule-hint { animation: message-in .2s ease-out; }
+.paused-note:not(:empty) { animation: message-in .4s ease-out; }
+@keyframes message-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .rule-error, .rule-hint, .paused-note:not(:empty) { animation: none; }
+}
 /* Errors carry an icon too, so they aren't signalled by colour alone. */
 .rule-error { display: flex; gap: 5px; align-items: baseline; color: var(--danger); }
 .rule-error::before {

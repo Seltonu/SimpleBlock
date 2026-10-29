@@ -38,6 +38,8 @@
       line-height: 1;
       box-shadow: 0 0 0 2px var(--surface);
     }
+    /* The checkbox sits inside a larger click target; touch the box itself, like 1 and 2. */
+    .rule-check .callout { top: -8px; left: -13px; }
   </style>
 </head>
 <body inert>
@@ -89,7 +91,7 @@
           <label class="rule-check"><span class="callout">3</span><input type="checkbox" aria-label="Use rule 1" checked></label>
           <input class="field field--block" type="text" value="reddit.com*" aria-label="Block">
           <span class="rule-arrow"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <input class="field field--redirect" type="text" placeholder="SimpleBlock page" aria-label="Redirect to">
+          <input class="field field--redirect" type="text" placeholder="SimpleBlock" aria-label="Redirect to">
           <button class="icon-btn rule-remove" type="button" aria-label="Remove rule"><svg viewBox="0 0 16 16" width="14" height="14"><path d="m4.5 4.5 7 7m0-7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
         </li>
         <li class="rule">
@@ -103,7 +105,7 @@
           <label class="rule-check"><input type="checkbox" aria-label="Use rule 3"></label>
           <input class="field field--block" type="text" value="youtube.com/shorts*" aria-label="Block">
           <span class="rule-arrow"><svg viewBox="0 0 16 16" width="14" height="14"><path d="M3 8h9.5M9 4.5 12.5 8 9 11.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <input class="field field--redirect" type="text" placeholder="SimpleBlock page" aria-label="Redirect to">
+          <input class="field field--redirect" type="text" placeholder="SimpleBlock" aria-label="Redirect to">
           <button class="icon-btn rule-remove" type="button" aria-label="Remove rule"><svg viewBox="0 0 16 16" width="14" height="14"><path d="m4.5 4.5 7 7m0-7-7 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
         </li>
       </ul>

@@ -34,6 +34,9 @@ const port = browser.runtime.connect({ name: "popup" });
 let config;
 let selectedId;
 let hintRuleId = null; // the rule whose pattern is being explained
+let typingRuleId = null; // the rule being typed in, whose new errors wait for a pause
+let typingTimer = null;
+const ERROR_DELAY_MS = 500;
 let deleteTimer = null;
 
 const uiState = browser.storage.local.get(UI_KEY).catch(() => ({}));
@@ -221,6 +224,12 @@ function refreshMessages() {
     }
     if (pattern.ok && rule.id === hintRuleId) hint = describeScope(pattern);
 
+    // Don't flag a half-typed rule mid-keystroke: a new error waits until typing
+    // pauses (see the input handler), but one already showing keeps updating.
+    if (rule.id === typingRuleId && row.querySelector(".rule-error").hidden) {
+      blockError = "";
+      redirectError = "";
+    }
     if (blockError || redirectError) hint = "";
     markField(blockField, blockError, [blockError && `error-${rule.id}`, hint && `hint-${rule.id}`]);
     markField(redirectField, redirectError, [redirectError && `error-${rule.id}`]);
@@ -395,6 +404,12 @@ function addRuleset() {
   return set;
 }
 
+function showTypingErrors() {
+  clearTimeout(typingTimer);
+  typingRuleId = null;
+  refreshMessages();
+}
+
 function bindRuleEvents() {
   els.addRule.addEventListener("click", () => {
     // With no rulesets left, "Add rule" starts a new one rather than doing nothing.
@@ -414,6 +429,9 @@ function bindRuleEvents() {
     rule.block = row.querySelector(".field--block").value;
     rule.redirect = row.querySelector(".field--redirect").value;
     updateCurrentTab();
+    typingRuleId = rule.id;
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(showTypingErrors, ERROR_DELAY_MS);
     refreshMessages();
     push(false);
   });
@@ -421,6 +439,8 @@ function bindRuleEvents() {
   els.rules.addEventListener("change", (event) => {
     const row = event.target.closest(".rule");
     if (!row) return;
+    // Leaving the field (or Enter) shows any error straight away.
+    if (event.target.type === "text") showTypingErrors();
     if (event.target.type === "checkbox") {
       findRule(row.dataset.id).enabled = event.target.checked;
       row.classList.toggle("is-off", !event.target.checked);
@@ -446,7 +466,10 @@ function bindRuleEvents() {
 
   // Enter commits a rule, like leaving the field does.
   els.rules.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && !event.isComposing && event.target.type === "text") push(true);
+    if (event.key === "Enter" && !event.isComposing && event.target.type === "text") {
+      showTypingErrors();
+      push(true);
+    }
   });
 
   // Explain the pattern being edited ("only the homepage", "the whole site", ...).
@@ -472,8 +495,12 @@ function systemTheme() {
   return systemDark.matches ? "dark" : "light";
 }
 
+// Tracked here rather than read back from the page: with view transitions the
+// page switches a moment after the click.
+let chosenTheme = document.documentElement.dataset.scheme ?? null;
+
 function currentTheme() {
-  return document.documentElement.dataset.scheme ?? systemTheme();
+  return chosenTheme ?? systemTheme();
 }
 
 function renderThemeToggle() {
@@ -486,7 +513,8 @@ function bindThemeToggle() {
   els.themeToggle.addEventListener("click", () => {
     const next = currentTheme() === "dark" ? "light" : "dark";
     // Choosing the theme Firefox is already using means "follow Firefox" again.
-    globalThis.setSimpleBlockTheme(next === systemTheme() ? null : next);
+    chosenTheme = next === systemTheme() ? null : next;
+    globalThis.setSimpleBlockTheme(chosenTheme);
     renderThemeToggle();
   });
   systemDark.addEventListener("change", renderThemeToggle);

@@ -139,12 +139,13 @@ export function parseUrl(href) {
 }
 
 /**
- * Validates a redirect target. An empty value means "show the SimpleBlock page".
+ * Validates a redirect target. An empty value (or "SimpleBlock") means "show the SimpleBlock page".
  * @returns {{ ok: true, url: string | null } | { ok: false, error: string }}
  */
 export function parseRedirect(text) {
   const raw = String(text ?? "").trim();
-  if (!raw) return { ok: true, url: null };
+  // Typing the placeholder ("SimpleBlock") means the same as leaving it empty.
+  if (!raw || raw.toLowerCase() === "simpleblock") return { ok: true, url: null };
 
   let url;
   try {

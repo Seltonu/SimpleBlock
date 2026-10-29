@@ -119,6 +119,8 @@ test("invalid or overly broad patterns are rejected", () => {
 test("redirect targets", () => {
   assert.deepEqual(parseRedirect(""), { ok: true, url: null });
   assert.deepEqual(parseRedirect("  "), { ok: true, url: null });
+  assert.deepEqual(parseRedirect("SimpleBlock"), { ok: true, url: null });
+  assert.deepEqual(parseRedirect(" simpleBLOCK "), { ok: true, url: null });
   assert.equal(parseRedirect("facebook.com/messages").url, "https://facebook.com/messages");
   assert.equal(parseRedirect("http://example.com").url, "http://example.com/");
   assert.equal(parseRedirect("localhost:8080").url, "https://localhost:8080/");

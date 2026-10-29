@@ -18,12 +18,12 @@
 :root[data-scheme="light"] { color-scheme: light; }
 :root[data-scheme="dark"] { color-scheme: dark; }
 
-/* A short cross-fade when the theme button is used (shared/theme.js adds the class). */
+/* Fallback fade for Firefox versions without view transitions (shared/theme.js adds the class). */
 :root.theme-changing,
 :root.theme-changing *,
 :root.theme-changing *::before,
 :root.theme-changing *::after {
-  transition: background-color .3s ease, border-color .3s ease, color .3s ease, box-shadow .3s ease, fill .3s ease, stroke .3s ease;
+  transition: background-color .3s ease, border-color .3s ease, color .3s ease;
 }
 
 body {

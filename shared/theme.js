@@ -22,15 +22,25 @@
     }
   }
 
+  function setScheme(theme) {
+    if (theme === "light" || theme === "dark") root.dataset.scheme = theme;
+    else delete root.dataset.scheme;
+  }
+
   function apply(theme, fade) {
-    if (fade && !reducedMotion.matches) {
-      // Briefly turns on colour transitions (see "theme-changing" in the CSS).
+    if (!fade || reducedMotion.matches) {
+      setScheme(theme);
+    } else if (document.startViewTransition) {
+      // Cross-fades a snapshot of the page in one step, which stays smooth
+      // however much is on screen.
+      document.startViewTransition(() => setScheme(theme));
+    } else {
+      // Older Firefox: briefly turn on colour transitions ("theme-changing" in the CSS).
       root.classList.add("theme-changing");
       clearTimeout(fadeTimer);
       fadeTimer = setTimeout(() => root.classList.remove("theme-changing"), 400);
+      setScheme(theme);
     }
-    if (theme === "light" || theme === "dark") root.dataset.scheme = theme;
-    else delete root.dataset.scheme;
   }
 
   apply(read(), false);
