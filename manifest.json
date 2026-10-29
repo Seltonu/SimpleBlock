@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "SimpleBlock",
-    "version": "2.1.0",
+    "version": "2.1.1",
     "description": "Add simple blocklists to help you focus",
     "icons": {
         "48": "icons/simpleblock-48.png"
