@@ -16,6 +16,7 @@ const els = {
   themeToggle: $("theme-toggle"),
   master: $("master"),
   pausedNote: $("paused-note"),
+  version: $("version"),
   tabs: $("tabs"),
   addRuleset: $("add-ruleset"),
   panel: $("panel"),
@@ -41,6 +42,7 @@ const ERROR_DELAY_MS = 500;
 let deleteTimer = null;
 
 const uiState = browser.storage.local.get(UI_KEY).catch(() => ({}));
+els.version.textContent = `v${browser.runtime.getManifest().version}`;
 port.onMessage.addListener((message) => {
   if (message?.type === "init" && !config) init(message.config);
 });
@@ -292,6 +294,13 @@ function bindEvents() {
 
   els.help.addEventListener("click", async () => {
     await browser.tabs.create({ url: browser.runtime.getURL("pages/help.html") });
+    window.close();
+  });
+
+  // Open the GitHub link in a normal tab and close the popup, like Help does.
+  els.version.addEventListener("click", async (event) => {
+    event.preventDefault();
+    await browser.tabs.create({ url: els.version.href });
     window.close();
   });
 
