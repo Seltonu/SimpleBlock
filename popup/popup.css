@@ -112,11 +112,11 @@ svg { display: block; flex: none; }
 .paused-note:empty { display: none; }
 .paused-note:not(:empty) + .switch--master { margin-left: 4px; }
 
-/* Paused, or an inactive category: switches, checkboxes and dots turn grey. Only
-   these colours change (rather than greying everything with a filter) so that red
-   stays red: errors, invalid fields and the delete button. */
+/* Paused, or an inactive category: switches, checkboxes and dots that are on go a
+   muted blue and green, to show they aren't doing anything right now. Both still
+   reach 3:1 against their background. Red stays red (errors, delete). */
 body.is-paused .workspace,
-.panel.is-off .rules { --accent: var(--muted); --ok: var(--muted); }
+.panel.is-off .rules { --accent: light-dark(#6a8fa8, #5d8aa3); --ok: light-dark(#4f876b, #5b8f74); }
 
 /* ---------- Ruleset tabs ---------- */
 
