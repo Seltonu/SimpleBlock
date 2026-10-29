@@ -112,7 +112,7 @@ function render() {
 function renderMaster() {
   els.master.checked = config.enabled;
   document.body.classList.toggle("is-paused", !config.enabled);
-  els.pausedNote.textContent = config.enabled ? "" : "Blocking is paused.";
+  els.pausedNote.textContent = config.enabled ? "" : "Blocking is paused";
 }
 
 function renderTabs() {

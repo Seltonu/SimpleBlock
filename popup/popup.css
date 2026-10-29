@@ -77,34 +77,40 @@ svg { display: block; flex: none; }
 .brand-icon { width: 24px; height: 24px; }
 .brand { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
 
-/* Sits right after the name; the switch is pushed to the far right. */
-.theme-toggle { width: 28px; height: 28px; margin-right: auto; }
+.theme-toggle { width: 28px; height: 28px; }
 
-/* Empty (and so invisible) unless blocking is paused. */
+/* The switch sits at the far right. The paused banner, when shown, takes the
+   space in between, inside the header row, so the popup never changes height
+   (Firefox resizing a popup is what made a full-width banner stutter). */
+.switch--master { margin-left: auto; }
 .paused-note {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 0 16px 10px;
-  padding: 8px 12px;
+  gap: 6px;
+  margin-left: auto;
+  padding: 4px 10px;
   border: 1px solid light-dark(#efb3ae, #7a2c26);
-  border-radius: 8px;
+  border-radius: 7px;
   background: light-dark(#fdecea, #3a1715);
   color: light-dark(#a3221d, #ffb4ab);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: message-in .3s ease-out;
 }
 .paused-note::before {
   content: "";
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   background: currentColor;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm-.75 3.5h1.5v5h-1.5zm0 6.25h1.5v1.5h-1.5z'/%3E%3C/svg%3E") center / contain no-repeat;
 }
-/* Collapsed rather than display:none, so screen readers still announce it when it fills. */
-.paused-note:empty { margin: 0; padding: 0; border: 0; }
-.paused-note:empty::before { content: none; }
+.paused-note:empty { display: none; }
+.paused-note:not(:empty) + .switch--master { margin-left: 4px; }
 
 /* Paused, or an inactive category: switches, checkboxes and dots turn grey. Only
    these colours change (rather than greying everything with a filter) so that red
@@ -261,10 +267,9 @@ body.is-paused .workspace,
 /* Firefox grows the popup a moment before the new line paints; fading the text in
    turns that pause into a smooth appearance instead of a stutter. */
 .rule-error, .rule-hint { animation: message-in .2s ease-out; }
-.paused-note:not(:empty) { animation: message-in .4s ease-out; }
 @keyframes message-in { from { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .rule-error, .rule-hint, .paused-note:not(:empty) { animation: none; }
+  .rule-error, .rule-hint, .paused-note { animation: none; }
 }
 /* Errors carry an icon too, so they aren't signalled by colour alone. */
 .rule-error { display: flex; gap: 5px; align-items: baseline; color: var(--danger); }
